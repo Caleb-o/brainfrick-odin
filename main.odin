@@ -21,4 +21,5 @@ main :: proc() {
 	// debug_code(code)
 
 	fmt.printf("Result %s\n", vm_run(&vm))
+	// vm_dump_memory(&vm)
 }

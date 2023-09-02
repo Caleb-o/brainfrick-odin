@@ -10,6 +10,8 @@ Byte_Code :: enum (u8) {
 	DecBy,
 	Mem_Left,
 	Mem_Right,
+	Mem_Left_By,
+	Mem_Right_By,
 	Print,
 	Input,
 	Jz,
@@ -25,11 +27,15 @@ Compiler :: struct {
 opcode_map := map[u8]Byte_Code {
 	'+' = Byte_Code.Inc,
 	'-' = Byte_Code.Dec,
+	'<' = Byte_Code.Mem_Left,
+	'>' = Byte_Code.Mem_Right,
 }
 
 many_opcode_map := map[u8]Byte_Code {
 	'+' = Byte_Code.IncBy,
 	'-' = Byte_Code.DecBy,
+	'<' = Byte_Code.Mem_Left_By,
+	'>' = Byte_Code.Mem_Right_By,
 }
 
 compiler_new :: proc(source: []u8) -> Compiler {
@@ -72,11 +78,9 @@ compile_inst :: proc(compiler: ^Compiler) -> bool {
 		compile_many_op(compiler, '-')
 
 	case '>':
-		append(&compiler.code, u8(Byte_Code.Mem_Right))
-		advance(compiler)
+		compile_many_op(compiler, '>')
 	case '<':
-		append(&compiler.code, u8(Byte_Code.Mem_Left))
-		advance(compiler)
+		compile_many_op(compiler, '<')
 
 	case ',':
 		append(&compiler.code, u8(Byte_Code.Input))
@@ -96,11 +100,9 @@ compile_inst :: proc(compiler: ^Compiler) -> bool {
 compile_many_op :: proc(compiler: ^Compiler, char: u8) -> bool {
 	count := 0
 
-	c := peek(compiler)
-	for c != 0 && c == char {
+	for c := peek(compiler); c != 0 && c == char; c = peek(compiler) {
 		count += 1
 		advance(compiler)
-		c = peek(compiler)
 	}
 
 	single_operator := opcode_map[char] or_return
@@ -172,6 +174,11 @@ debug_code :: proc(code: []u8) {
 			simple_instruction(&index, "MEM_LEFT")
 		case .Mem_Right:
 			simple_instruction(&index, "MEM_RIGHT")
+
+		case .Mem_Left_By:
+			byte_instruction(&index, "MEM_LEFT_BY", code)
+		case .Mem_Right_By:
+			byte_instruction(&index, "MEM_RIGHT_BY", code)
 
 		case .Input:
 			simple_instruction(&index, "INPUT")

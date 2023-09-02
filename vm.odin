@@ -16,7 +16,7 @@ VM :: struct {
 }
 
 vm_new :: proc(code: []u8) -> VM {
-	return VM{0, 0, code, make([dynamic]u8, 32)}
+	return VM{0, 0, code, make([dynamic]u8, 256)}
 }
 
 vm_destroy :: proc(vm: ^VM) {
@@ -46,6 +46,19 @@ vm_run :: proc(vm: ^VM) -> Run_Result {
 			}
 		case .Mem_Right:
 			vm.mp += 1
+			if vm.mp >= len(vm.memory) {
+				resize(&vm.memory, len(vm.memory) * 2)
+			}
+
+		case .Mem_Left_By:
+			vm.mp -= int(vm_read_byte(vm))
+			if vm.mp < 0 {
+				mp := len(vm.memory) - (0 - vm.mp)
+				fmt.printf("MP %d / %d\n", mp, len(vm.memory) - 1)
+				vm.mp = mp
+			}
+		case .Mem_Right_By:
+			vm.mp += int(vm_read_byte(vm))
 			if vm.mp >= len(vm.memory) {
 				resize(&vm.memory, len(vm.memory) * 2)
 			}
