@@ -9,18 +9,18 @@ Run_Result :: enum {
 }
 
 VM :: struct {
+	flags:  Flags,
 	ip:     int,
 	mp:     int,
 	code:   []u8,
 	memory: [dynamic]u8,
 }
 
-vm_new :: proc(code: []u8) -> VM {
-	return VM{0, 0, code, make([dynamic]u8, 256)}
+vm_new :: proc(flags: Flags, code: []u8) -> VM {
+	return VM{flags, 0, 0, code, make([dynamic]u8, 256)}
 }
 
 vm_destroy :: proc(vm: ^VM) {
-	delete(vm.code)
 	delete(vm.memory)
 }
 
